@@ -109,6 +109,37 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/test',
+    component: Layout,
+    redirect: '/test/list',
+    name: 'test',
+    meta: {
+      title: 'test',
+      icon: 'el-icon-s-help'
+    },
+    children: [
+      {
+        path: 'create',
+        component: () => import('@/views/a_article/create'),
+        name: 'CreateArticle',
+        meta: { title: 'Create Article', icon: 'edit' }
+      },
+      {
+        path: 'edit/:id(\\d+)',
+        component: () => import('@/views/a_article/edit'),
+        name: 'EditArticle',
+        meta: { title: 'Edit Article', noCache: true, activeMenu: '/test/list' },
+        hidden: true
+      },
+      {
+        path: 'list',
+        component: () => import('@/views/a_article/list'),
+        name: 'ArticleList',
+        meta: { title: 'Article List', icon: 'list' }
+      }
+    ]
+  },
+  {
     path: '/notices',
     component: Layout,
     redirect: '/notices/index',
