@@ -12,11 +12,11 @@
       highlight-current-row
       style="width: 100%"
     >
-      <el-table-column align="center" label="ID" width="80">
+      <!-- <el-table-column align="center" label="ID" width="80">
         <template slot-scope="{ row }">
           <span>{{ row.id }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
 
       <el-table-column width="180px" align="center" label="发布日期">
         <template slot-scope="{ row }">
@@ -24,9 +24,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="发布者">
+      <el-table-column width="120px" align="center" label="标题">
         <template slot-scope="{ row }">
-          <span>{{ row.author }}</span>
+          <span>{{ row.title }}</span>
         </template>
       </el-table-column>
 
