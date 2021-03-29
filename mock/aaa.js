@@ -1,33 +1,62 @@
 const Mock = require('mockjs')
 
-const List = []
+const Notices = []
+const Articles = []
+const Merchants = []
+const Managers = []
 const count = 100
 
 const baseContent = '<p>I am testing data, I am testing data.</p><p><img src="https://wpimg.wallstcn.com/4c69009c-0fd4-4153-b112-6cb53d1cf943"></p>'
 const image_uri = 'https://wpimg.wallstcn.com/e4558086-631c-425c-9430-56ffb46e70b3'
 
 for (let i = 0; i < count; i++) {
-  List.push(Mock.mock({
+  Notices.push(Mock.mock({
     id: '@increment',
     title: '@title(5, 10)',
-    content_type: '@integer(0, 1)',
-    content_url: image_uri,
-    content_short: 'mock data',
-    content: baseContent,
-    importance: '@integer(1, 3)',
     'status|1': ['published', 'draft'],
-    timestamp: +Mock.Random.date('T'),
-    author: '@first',
-    reviewer: '@first',
-    forecast: '@float(0, 100, 2, 2)',
-    'type|1': ['CN', 'US', 'JP', 'EU'],
-    display_time: '@datetime',
-    comment_disabled: true,
-    pageviews: '@integer(300, 5000)',
-    image_uri,
-    platforms: ['a-platform']
-  }))
+    create_on: +Mock.Random.date('T'),
+    update_on: +Mock.Random.date('T'),
+    content_type: '@integer(1, 2)',
+    content: '',
+    content_url: image_uri,
+    importance: '@integer(0, 1)',
+  }));
+  Articles.push(Mock.mock({
+    id: '@increment',
+    title: '@title(5, 10)',
+    'status|1': ['published', 'draft'],
+    create_on: +Mock.Random.date('T'),
+    update_on: +Mock.Random.date('T'),
+    content_type: '@integer(1, 2)',
+    content: '',
+    content_url: image_uri,
+    importance: '@integer(0, 1)',
+    avatar: image_uri,
+    'service_id|1': ['tab1', 'tab2', 'tab3', 'tab4'],
+  }));
+  Merchants.push(Mock.mock({
+    avatar: image_uri,
+    id: '@increment',
+    company_name: '@title(5, 10)',
+    biz_certif_no: '@title(5, 10)',
+    registered_addr: '@title(5, 10)',
+    biz_addr: '@title(5, 10)',
+    biz_contact_name: '@title(5, 10)',
+    biz_contact_number: '@title(5, 10)',
+  }));
+  Managers.push(Mock.mock({
+    id: '@increment',
+    email: '@title(5, 10)',
+    addr: '@title(5, 10)',
+    mobile: '@title(5, 10)',
+    nick: '@title(5, 10)',
+    username: '@title(5, 10)',
+    password: '@title(5, 10)',
+    avatar: image_uri,
+    client_id: '@title(5, 10)',
+  }));
 }
+
 
 module.exports = [
   {
@@ -36,7 +65,10 @@ module.exports = [
     response: config => {
       const { importance, type, title, page = 1, limit = 20, sort } = config.query
 
-      let mockList = List.filter(item => {
+      let mockList = Notices.filter(item => {
+        if (item.content_type === 1) {
+          item.content = '';
+        }
         if (importance && item.importance !== +importance) return false
         if (type && item.type !== type) return false
         if (title && item.title.indexOf(title) < 0) return false
@@ -60,12 +92,13 @@ module.exports = [
   },
 
   {
-    url: '/vue-element-admin/article/detail',
+    url: '/vue-element-admin/notice/detail',
     type: 'get',
     response: config => {
       const { id } = config.query
-      for (const article of List) {
+      for (const article of Notices) {
         if (article.id === +id) {
+          article.content = baseContent;
           return {
             code: 20000,
             data: article
@@ -75,26 +108,50 @@ module.exports = [
     }
   },
 
+  //软文>>>
   {
-    url: '/vue-element-admin/article/pv',
+    url: '/vue-element-admin/article/list',
     type: 'get',
-    response: _ => {
+    response: config => {
+      const { page = 1, limit = 20 } = config.query
+
+      let mockList = Articles.filter(item => {
+        if (item.content_type === 1) {
+          item.content = '';
+        }
+        return true
+      })
+
+      const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
+
       return {
         code: 20000,
         data: {
-          pvData: [
-            { key: 'PC', pv: 1024 },
-            { key: 'mobile', pv: 1024 },
-            { key: 'ios', pv: 1024 },
-            { key: 'android', pv: 1024 }
-          ]
+          total: mockList.length,
+          items: pageList
         }
       }
     }
   },
 
   {
-    url: '/vue-element-admin/article/create',
+    url: '/vue-element-admin/article/detail',
+    type: 'get',
+    response: config => {
+      const { id } = config.query
+      for (const article of Articles) {
+        if (article.id === +id) {
+          article.content = baseContent;
+          return {
+            code: 20000,
+            data: article
+          }
+        }
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/wen/create',
     type: 'post',
     response: _ => {
       return {
@@ -105,7 +162,7 @@ module.exports = [
   },
 
   {
-    url: '/vue-element-admin/article/update',
+    url: '/vue-element-admin/wen/update',
     type: 'post',
     response: _ => {
       return {
@@ -113,6 +170,69 @@ module.exports = [
         data: 'success'
       }
     }
-  }
+  },
+
+  //Super Admin >>>
+  {
+    url: '/merchant/list',
+    type: 'get',
+    response: config => {
+      const { page = 1, limit = 20 } = config.query
+
+      let mockList = Merchants
+
+      const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
+
+      return {
+        code: 20000,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+
+  {
+    url: '/user/merchant/list',
+    type: 'get',
+    response: config => {
+      const { page = 1, limit = 20 } = config.query
+
+      let mockList = Managers
+
+      const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
+
+      return {
+        code: 20000,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+
+  {
+    url: '/merchant/add',
+    type: 'post',
+    response: _ => {
+      return {
+        code: 20000,
+        data: 'success'
+      }
+    }
+  },
+
+  {
+    url: '/user/merchant/add',
+    type: 'post',
+    response: _ => {
+      return {
+        code: 20000,
+        data: 'success'
+      }
+    }
+  },
 ]
 

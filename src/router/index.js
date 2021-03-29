@@ -109,37 +109,6 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/test',
-    component: Layout,
-    redirect: '/test/list',
-    name: 'test',
-    meta: {
-      title: 'test',
-      icon: 'el-icon-s-help'
-    },
-    children: [
-      {
-        path: 'create',
-        component: () => import('@/views/a_article/create'),
-        name: 'CreateArticle',
-        meta: { title: 'Create Article', icon: 'edit' }
-      },
-      {
-        path: 'edit/:id(\\d+)',
-        component: () => import('@/views/a_article/edit'),
-        name: 'EditArticle',
-        meta: { title: 'Edit Article', noCache: true, activeMenu: '/test/list' },
-        hidden: true
-      },
-      {
-        path: 'list',
-        component: () => import('@/views/a_article/list'),
-        name: 'ArticleList',
-        meta: { title: 'Article List', icon: 'list' }
-      }
-    ]
-  },
-  {
     path: '/notices',
     component: Layout,
     redirect: '/notices/index',
@@ -152,7 +121,7 @@ export const constantRoutes = [
       }
     ]
   },
-  
+
   {
     path: '/feedback',
     component: Layout,
@@ -189,6 +158,30 @@ export const constantRoutes = [
         component: () => import('@/views/a_contacts/index'),
         name: 'contacts',
         meta: { title: '联系人管理', icon: 'user', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/superadmin',
+    component: Layout,
+    redirect: '/superadmin/merchant',
+    name: 'SuperAdmin',
+    meta: {
+      title: 'SuperAdmin',
+      icon: 'el-icon-s-help'
+    },
+    children: [
+      {
+        path: 'merchant',
+        component: () => import('@/views/a_admin/merchant'),
+        name: 'merchant',
+        meta: { title: 'Merchant', icon: 'list' }
+      },
+      {
+        path: 'manager',
+        component: () => import('@/views/a_admin/manager'),
+        name: 'manager',
+        meta: { title: 'Manager', icon: 'list' }
       }
     ]
   },

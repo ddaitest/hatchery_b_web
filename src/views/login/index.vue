@@ -98,7 +98,8 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: '111111'
+        password: 'Wab@123',
+        client_id:'36ff662f-3041-5c10-8bde-65e6fb86523b'
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -115,10 +116,13 @@ export default {
   watch: {
     $route: {
       handler: function(route) {
+        console.log("watch.$route.handler()")
         const query = route.query
         if (query) {
           this.redirect = query.redirect
           this.otherQuery = this.getOtherQuery(query)
+          console.log("watch.$route.handler() 2")
+          console.log(query)
         }
       },
       immediate: true
@@ -156,6 +160,8 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
+          console.log("this.loginForm>>");
+          console.log(this.loginForm);
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })

@@ -23,7 +23,7 @@
     >
       <el-table-column width="180px" align="center" label="发布日期">
         <template slot-scope="{ row }">
-          <span>{{ row.timestamp | parseTime("{y}-{m}-{d} {h}:{i}") }}</span>
+          <span>{{ row.create_on | parseTime("{y}-{m}-{d} {h}:{i}") }}</span>
         </template>
       </el-table-column>
 
@@ -52,6 +52,16 @@
         </template>
       </el-table-column>
 
+      <el-table-column class-name="status-col" width="120px" label="链接">
+        <template slot-scope="{ row }">
+          <el-popconfirm :title="row.content_url" icon="el-icon-link">
+            <template #reference>
+              <el-button size="mini">查看链接</el-button>
+            </template>
+          </el-popconfirm>
+        </template>
+      </el-table-column>
+
       <el-table-column
         label="操作"
         align="center"
@@ -59,7 +69,12 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="handleUpdate(row)"
+            :loading="row.edit_loading"
+          >
             编辑
           </el-button>
           <el-button
@@ -87,28 +102,6 @@
           </el-button>
         </template>
       </el-table-column>
-      <!-- <el-table-column align="center" label="操作" width="120">
-        <template slot-scope="{ row }">
-          <el-button
-            v-if="row.edit"
-            type="success"
-            size="small"
-            icon="el-icon-circle-check-outline"
-            @click="confirmEdit(row)"
-          >
-            Ok
-          </el-button>
-          <el-button
-            v-else
-            type="primary"
-            size="small"
-            icon="el-icon-edit"
-            @click="row.edit = !row.edit"
-          >
-            编辑
-          </el-button>
-        </template>
-      </el-table-column> -->
     </el-table>
 
     <pagination
@@ -126,12 +119,12 @@
         :model="temp"
         label-position="right"
         label-width="100px"
-        style="width: 400px; margin-left: 50px"
+        style="width: 100%"
       >
         <el-form-item label="公告标题" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-        <el-form-item label="公告状态">
+        <!-- <el-form-item label="公告状态">
           <el-select
             v-model="temp.status"
             class="filter-item"
@@ -144,7 +137,7 @@
               :value="item"
             />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="重要程度">
           <el-rate
             v-model="temp.importance"
@@ -167,15 +160,17 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="公告内容" v-show="temp.content_type == 1">
+        <el-form-item label="外部链接" v-show="temp.content_type === 2">
           <el-input
-            v-model="temp.remark"
-            :autosize="{ minRows: 2, maxRows: 4 }"
+            v-model="temp.content_url"
+            :autosize="{ minRows: 1, maxRows: 4 }"
             type="textarea"
           />
         </el-form-item>
-        <div v-show="temp.content_type == 0" class="margin-left: 50px">
-          <el-form-item>
+        <!-- 富文本 区域 -->
+        <div v-show="temp.content_type === 1" class="margin-left: 50px">
+          <wang ref="editor" v-model="temp.content"></wang>
+          <!-- <el-form-item>
             <el-alert
               title="设置了链接后，将不再显示文本内容"
               type="success"
@@ -192,7 +187,8 @@
             <el-button @click="dialogFormVisible = false" type="primary">
               编辑
             </el-button>
-          </el-form-item>
+          </el-form-item> -->
+          <div id="demo1"></div>
         </div>
       </el-form>
       <el-divider></el-divider>
@@ -210,20 +206,29 @@
 </template>
 
 <script>
-import { fetchNoticeList } from "@/api/aaa";
+import {
+  fetchNoticeList,
+  fetchNotice,
+  createNotice,
+  updateNotice,
+  deleteNotice,
+} from "@/api/aaa";
 import Pagination from "@/components/Pagination";
 import waves from "@/directive/waves"; // waves directive
 import { parseTime } from "@/utils";
+import wang from "@/components/wang";
+import clip from "@/utils/clipboard"; // use clipboard directly
+import clipboard from "@/directive/clipboard/index.js";
 
 const contentTypeOptions = [
-  { key: 1, display_name: "文字" },
-  { key: 0, display_name: "链接" },
+  { key: 1, display_name: "图文内容" },
+  { key: 2, display_name: "外部链接" },
 ];
 
 export default {
-  name: "InlineEditTable",
-  components: { Pagination },
-  directives: { waves },
+  name: "NoticePage",
+  components: { Pagination, wang },
+  directives: { waves, clipboard },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -237,7 +242,7 @@ export default {
   data() {
     return {
       contentTypeOptions,
-      statusOptions: ["published", "draft", "deleted"],
+      // statusOptions: ["published", "draft", "deleted"],
       tableKey: 0,
       list: null,
       total: 200,
@@ -247,16 +252,16 @@ export default {
         limit: 10,
       },
       temp: {
+        loading: false,
         id: undefined,
-        importance: 1,
-        remark: "",
-        timestamp: new Date(),
         title: "",
-        type: "",
+        status: "published",
         content_type: 1,
+        importance: 1,
+        // create_on: new Date(),
+        // update_on: new Date(),
         content: "",
         content_url: "",
-        status: "published",
       },
       dialogFormVisible: false,
       dialogStatus: "",
@@ -267,14 +272,6 @@ export default {
       rules: {
         type: [
           { required: true, message: "type is required", trigger: "change" },
-        ],
-        timestamp: [
-          {
-            type: "date",
-            required: true,
-            message: "timestamp is required",
-            trigger: "change",
-          },
         ],
         title: [
           { required: true, message: "title is required", trigger: "blur" },
@@ -291,53 +288,27 @@ export default {
       const { data } = await fetchNoticeList(this.listQuery);
       const items = data.items;
       this.list = items.map((v) => {
-        this.$set(v, "edit", false); // https://vuejs.org/v2/guide/reactivity.html
-        v.originalTitle = v.title; //  will be used when user click the cancel botton
+        this.$set(v, "edit_loading", false); // https://vuejs.org/v2/guide/reactivity.html
         return v;
       });
       this.listLoading = false;
       this.total = data.total + 200;
     },
-    cancelEdit(row) {
-      row.title = row.originalTitle;
-      row.edit = false;
-      this.$message({
-        message: "The title has been restored to the original value",
-        type: "warning",
-      });
-    },
-    confirmEdit(row) {
-      row.edit = false;
-      row.originalTitle = row.title;
-      this.$message({
-        message: "The title has been edited",
-        type: "success",
-      });
-    },
-    handleUpdate(row) {
+    async handleUpdate(row) {
+      row.edit_loading = true;
       this.temp = Object.assign({}, row); // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp);
+      if (row.content_type === 1) {
+        const { data } = await fetchNotice(row.id);
+        this.temp.content = data.data.content;
+      } else {
+        this.temp.content_url = row.content;
+      }
+      row.edit_loading = false;
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
       this.$nextTick(() => {
         this.$refs["dataForm"].clearValidate();
       });
-    },
-    handleModifyStatus(row, status) {
-      this.$message({
-        message: "操作Success",
-        type: "success",
-      });
-      row.status = status;
-    },
-    handleDelete(row, index) {
-      this.$notify({
-        title: "Success",
-        message: "Delete Successfully",
-        type: "success",
-        duration: 2000,
-      });
-      this.list.splice(index, 1);
     },
     handleCreate() {
       this.resetTemp();
@@ -347,16 +318,70 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
+
+    handleModifyStatus(row, status) {
+      // TODO API
+      this.$message({
+        message: "操作Success",
+        type: "success",
+      });
+      row.status = status;
+    },
+    handleDelete(row, index) {
+      // TODO API
+      this.$notify({
+        title: "Success",
+        message: "Delete Successfully",
+        type: "success",
+        duration: 2000,
+      });
+      this.list.splice(index, 1);
+    },
+
     resetTemp() {
       this.temp = {
         id: undefined,
-        importance: 1,
-        remark: "",
-        timestamp: new Date(),
         title: "",
+        importance: 1,
+        content: "",
+        content_html: "",
+        content_url: "",
+        content_type: 1,
+        create_on: new Date(),
+        update_on: new Date(),
         status: "published",
-        type: "",
       };
+    },
+    createData() {
+      //TODO API
+      this.$message({
+        message: "创建成功",
+        type: "success",
+      });
+      this.dialogFormVisible = false;
+    },
+    updateData() {
+      //TODO API
+      this.$message({
+        message: "更新成功",
+        type: "success",
+      });
+      this.dialogFormVisible = false;
+    },
+    handleCopy(text, event) {
+      clip(text, event);
+      // this.$message({
+      //   message: 'handleCopy',
+      //   type: 'success',
+      //   duration: 1500
+      // })
+    },
+    clipboardSuccess() {
+      this.$message({
+        message: "Copy successfully",
+        type: "success",
+        duration: 1500,
+      });
     },
   },
 };
