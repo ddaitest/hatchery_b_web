@@ -109,30 +109,30 @@ module.exports = [
   },
 
   //软文>>>
-  {
-    url: '/vue-element-admin/article/list',
-    type: 'get',
-    response: config => {
-      const { page = 1, limit = 20 } = config.query
+  // {
+  //   url: '/post/biz/list',
+  //   type: 'get',
+  //   response: config => {
+  //     const { page = 1, limit = 20 } = config.query
 
-      let mockList = Articles.filter(item => {
-        if (item.content_type === 1) {
-          item.content = '';
-        }
-        return true
-      })
+  //     let mockList = Articles.filter(item => {
+  //       if (item.content_type === 1) {
+  //         item.content = '';
+  //       }
+  //       return true
+  //     })
 
-      const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
+  //     const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
 
-      return {
-        code: 20000,
-        data: {
-          total: mockList.length,
-          items: pageList
-        }
-      }
-    }
-  },
+  //     return {
+  //       code: 20000,
+  //       data: {
+  //         total: mockList.length,
+  //         items: pageList
+  //       }
+  //     }
+  //   }
+  // },
 
   {
     url: '/vue-element-admin/article/detail',
@@ -150,16 +150,16 @@ module.exports = [
       }
     }
   },
-  {
-    url: '/vue-element-admin/wen/create',
-    type: 'post',
-    response: _ => {
-      return {
-        code: 20000,
-        data: 'success'
-      }
-    }
-  },
+  // {
+  //   url: '/post/add',
+  //   type: 'post',
+  //   response: _ => {
+  //     return {
+  //       code: 20000,
+  //       data: 'success'
+  //     }
+  //   }
+  // },
 
   {
     url: '/vue-element-admin/wen/update',
@@ -213,16 +213,16 @@ module.exports = [
     }
   },
 
-  {
-    url: '/merchant/add',
-    type: 'post',
-    response: _ => {
-      return {
-        code: 20000,
-        data: 'success'
-      }
-    }
-  },
+  // {
+  //   url: '/merchant/add',
+  //   type: 'post',
+  //   response: _ => {
+  //     return {
+  //       code: 20000,
+  //       data: 'success'
+  //     }
+  //   }
+  // },
 
   {
     url: '/user/merchant/add',

@@ -1,4 +1,4 @@
-// 软文页面共用。物业端没有 优先级，serviceID 只有2个可选。
+// 物业专有。物业端有 置顶，serviceID 只有1个可选。
 <template>
   <div class="app-container">
     <div class="filter-container">
@@ -40,7 +40,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column
+      <!-- <el-table-column
         width="100px"
         class-name="status-col"
         label="重要程度"
@@ -49,26 +49,21 @@
         <template slot-scope="{ row }">
           <span>{{ row.top_flag }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
 
-      <!-- <el-table-column
-        width="100px"
-        class-name="status-col"
-        label="置顶"
-        v-if="!Kerrigan"
-      >
+      <el-table-column width="100px" class-name="status-col" label="置顶">
         <template slot-scope="{ row }">
           <el-switch
             v-model="row.top_flag"
             active-color="#13ce66"
             inactive-color="#ff4949"
-            :active-value="1"
-            :inactive-value="0"
+            active-value="1"
+            inactive-value="0"
             @change="handleChangeImp(row)"
           >
           </el-switch>
         </template>
-      </el-table-column> -->
+      </el-table-column>
 
       <el-table-column class-name="status-col" label="状态" width="110">
         <template slot-scope="{ row }">
@@ -186,10 +181,10 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item label="重要程度" v-if="Kerrigan">
+        <!-- <el-form-item label="重要程度" v-if="Kerrigan">
           <el-input v-model="temp.top_flag" />
-        </el-form-item>
-        <!-- <el-form-item label="置顶" v-if="!Kerrigan">
+        </el-form-item> -->
+        <el-form-item label="置顶">
           <el-switch
             v-model="temp.top_flag"
             active-color="#13ce66"
@@ -197,9 +192,9 @@
             :active-value="1"
             :inactive-value="0"
           />
-        </el-form-item> -->
+        </el-form-item>
         <!-- Service id -->
-        <el-form-item label="展示分类">
+        <!-- <el-form-item label="展示分类">
           <el-select
             v-model="temp.service_id"
             class="filter-item"
@@ -212,7 +207,7 @@
               :value="item.value"
             />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="内容类型">
           <el-select
             v-model="temp.contents_type"
@@ -262,7 +257,7 @@ import {
   createObject,
   updateObject,
   deleteObject,
-} from "@/api/a_article";
+} from "@/api/a_notice";
 import { options, optionSuper, filterOption, Kerrigan } from "@/api/setting";
 import Pagination from "@/components/Pagination";
 import waves from "@/directive/waves"; // waves directive
@@ -274,6 +269,8 @@ const contentTypeOptions = [
   { key: "0", display_name: "图文内容" },
   { key: "1", display_name: "外部链接" },
 ];
+
+const defaultServiceId = "tab1";
 
 export default {
   components: { Pagination, wang },
@@ -297,7 +294,7 @@ export default {
   },
   data() {
     return {
-      createLabel: "发布新文章",
+      createLabel: "发布新公告",
       Kerrigan,
       contentTypeOptions,
       serviceIdOptions: Kerrigan ? optionSuper : options,
@@ -319,7 +316,7 @@ export default {
         contents: "",
         redirect_url: "",
         avatar: "",
-        service_id: "",
+        service_id: defaultServiceId,
       },
       dialogFormVisible: false,
       dialogStatus: "",
@@ -368,6 +365,7 @@ export default {
         this.$set(v, "edit_loading", false); // https://vuejs.org/v2/guide/reactivity.html
         this.$set(v, "delete_loading", false);
         this.$set(v, "update_loading", false);
+        this.$set(v, "top_flag2", Number(v.top_flag));
         return v;
       });
       this.listLoading = false;
@@ -397,12 +395,28 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
-    // handleChangeImp(row) {
-    //   this.$message({
-    //     message: "操作成功",
-    //     type: "success",
-    //   });
-    // },
+    async handleChangeImp(row) {
+      row.update_loading = true;
+      const requestData = {
+        id: row.id,
+        top_flag: row.top_flag,
+      };
+      const { data, code, message } = await updateObject(requestData);
+      row.update_loading = false;
+      if (message === "success") {
+        this.$message({
+          message: "编辑成功",
+          type: "success",
+        });
+        // this.getList();
+      } else {
+        this.$message({
+          message: "编辑失败: " + message,
+          type: "danger",
+        });
+      }
+      // row.top_flag = status;
+    },
     async handleModifyStatus(row, status) {
       row.update_loading = true;
       const requestData = {
@@ -484,7 +498,7 @@ export default {
         contents: "",
         redirect_url: "",
         avatar: "",
-        service_id: "",
+        service_id: defaultServiceId,
       };
     },
     async createData() {

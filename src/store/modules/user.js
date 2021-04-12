@@ -31,16 +31,16 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { username, password, client_id } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      login({ username: username.trim(), password: password, client_id: client_id }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.access_token)
         //changed {
-        commit('SET_ROLES', ['admin'])
-        commit('SET_NAME', ['A_NAME'])
-        commit('SET_AVATAR', ['https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'])
-        commit('SET_INTRODUCTION', 'introduction')
+        // commit('SET_ROLES', ['admin'])
+        // commit('SET_NAME', ['A_NAME'])
+        // commit('SET_AVATAR', ['https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'])
+        // commit('SET_INTRODUCTION', 'introduction')
         //changed }
         setToken(data.access_token)
         resolve()
@@ -51,7 +51,22 @@ const actions = {
   },
 
   // get user info
-  getInfo({ commit, state }) {
+  async getInfo({ commit, state }) {
+    const data = {
+      roles: ['admin'],
+      introduction: 'I am a super administrator',
+      avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
+      name: 'Super Admin'
+    }
+    const { roles, name, avatar, introduction } = data
+    commit('SET_ROLES', roles)
+    commit('SET_NAME', name)
+    commit('SET_AVATAR', avatar)
+    commit('SET_INTRODUCTION', introduction)
+    return data;
+  },
+
+  getInfo2({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response

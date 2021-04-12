@@ -1,4 +1,4 @@
-// 软文页面共用。物业端没有 优先级，serviceID 只有2个可选。
+// 页面共用。物业端没有 优先级，serviceID 只有2个可选。
 <template>
   <div class="app-container">
     <div class="filter-container">
@@ -262,7 +262,7 @@ import {
   createObject,
   updateObject,
   deleteObject,
-} from "@/api/a_article";
+} from "@/api/a_banner";
 import { options, optionSuper, filterOption, Kerrigan } from "@/api/setting";
 import Pagination from "@/components/Pagination";
 import waves from "@/directive/waves"; // waves directive
@@ -297,7 +297,7 @@ export default {
   },
   data() {
     return {
-      createLabel: "发布新文章",
+      createLabel: "发布新轮播图",
       Kerrigan,
       contentTypeOptions,
       serviceIdOptions: Kerrigan ? optionSuper : options,

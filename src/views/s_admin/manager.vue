@@ -8,7 +8,7 @@
         icon="el-icon-edit"
         @click="handleCreate"
       >
-        新建物业
+        新建管理员
       </el-button>
     </div>
 
@@ -21,9 +21,9 @@
       highlight-current-row
       style="width: 100%"
     >
-      <el-table-column width="" align="left" label="物业名称">
+      <el-table-column width="" align="left" label="管理员名称">
         <template slot-scope="{ row }">
-          <span>{{ row.company_name }}</span>
+          <span>{{ row.username }}</span>
         </template>
       </el-table-column>
 
@@ -59,26 +59,29 @@
         label-width="160px"
         style="width: 100%"
       >
-        <el-form-item label="物业名" prop="title">
-          <el-input v-model="temp.company_name" />
+        <el-form-item label="email">
+          <el-input v-model="temp.email" />
         </el-form-item>
         <el-form-item label="图标">
           <el-input v-model="temp.avatar" />
         </el-form-item>
-        <el-form-item label="biz_certif_no" prop="title">
-          <el-input v-model="temp.biz_certif_no" />
+        <el-form-item label="addr">
+          <el-input v-model="temp.addr" />
         </el-form-item>
-        <el-form-item label="registered_addr" prop="title">
-          <el-input v-model="temp.registered_addr" />
+        <el-form-item label="mobile">
+          <el-input v-model="temp.mobile" />
         </el-form-item>
-        <el-form-item label="biz_addr" prop="title">
-          <el-input v-model="temp.biz_addr" />
+        <el-form-item label="nick">
+          <el-input v-model="temp.nick" />
         </el-form-item>
-        <el-form-item label="biz_contact_name" prop="title">
-          <el-input v-model="temp.biz_contact_name" />
+        <el-form-item label="username">
+          <el-input v-model="temp.username" />
         </el-form-item>
-        <el-form-item label="biz_contact_number" prop="title">
-          <el-input v-model="temp.biz_contact_number" />
+        <el-form-item label="password">
+          <el-input v-model="temp.password" />
+        </el-form-item>
+        <el-form-item label="client_id">
+          <el-input v-model="temp.client_id" />
         </el-form-item>
       </el-form>
       <el-divider></el-divider>
@@ -96,7 +99,7 @@
 </template>
 
 <script>
-import { fetchMerchantList, createMerchant } from "@/api/aaa";
+import { fetchList, createObject } from "@/api/a_manager";
 import Pagination from "@/components/Pagination";
 import { parseTime } from "@/utils";
 
@@ -115,19 +118,20 @@ export default {
       total: 200,
       listLoading: true,
       listQuery: {
-        page: 1,
-        limit: 10,
+        page_num: 0,
+        page_size: 10,
       },
       temp: {
         loading: false,
         id: "",
-        company_name: "",
+        email: "",
         avatar: "https://avatars.githubusercontent.com/u/3735867?v=4",
-        biz_certif_no: "",
-        registered_addr: "",
-        biz_addr: "",
-        biz_contact_name: "",
-        biz_contact_number: "",
+        addr: "",
+        mobile: "",
+        nick: "",
+        username: "",
+        password: "",
+        client_id: "",
       },
       dialogFormVisible: false,
       dialogStatus: "",
@@ -136,7 +140,13 @@ export default {
         create: "Create",
       },
       rules: {
-        title: [
+        username: [
+          { required: true, message: "this is required", trigger: "blur" },
+        ],
+        password: [
+          { required: true, message: "this is required", trigger: "blur" },
+        ],
+        client_id: [
           { required: true, message: "this is required", trigger: "blur" },
         ],
       },
@@ -148,15 +158,13 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true;
-      console.log("createData>>");
-      const { data } = await fetchMerchantList(this.listQuery);
-      const items = data.items;
-      this.list = items.map((v) => {
+      const { data } = await fetchList(this.listQuery);
+      this.list = data.map((v) => {
         this.$set(v, "edit_loading", false); // https://vuejs.org/v2/guide/reactivity.html
         return v;
       });
       this.listLoading = false;
-      this.total = data.total;
+      this.total = data.length;
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); // copy obj
@@ -178,23 +186,23 @@ export default {
       this.temp = {
         loading: false,
         id: "",
-        company_name: "",
+        email: "",
         avatar: "https://avatars.githubusercontent.com/u/3735867?v=4",
-        biz_certif_no: "",
-        registered_addr: "",
-        biz_addr: "",
-        biz_contact_name: "",
-        biz_contact_number: "",
+        addr: "",
+        mobile: "",
+        nick: "",
+        username: "",
+        password: "",
+        client_id: "",
       };
     },
     async createData() {
-      const { data } = await createMerchant(this.temp);
-      console.log("createData>>");
-      console.log(data);
+      const { data } = await createObject(this.temp);
       this.$message({
         message: "创建成功",
         type: "success",
       });
+      this.getList();
       this.dialogFormVisible = false;
     },
     updateData() {

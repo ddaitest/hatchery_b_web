@@ -5,13 +5,21 @@ const REAL_BASE_URL = "http://106.12.147.150:8080/";
 export function login(data) {
   console.log("login>>");
   console.log(data);
-  return request({
-    url: '/user/auth/token',
-    method: 'post',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    data,
-    baseURL: REAL_BASE_URL
-  })
+  const params = new URLSearchParams()
+  params.append('username', data.username)
+  params.append('password', data.password)
+  params.append('client_id', data.client_id)
+
+  const config = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  }
+  return request.post(
+    'http://106.12.147.150:8080/user/auth/token',
+    params,
+    config,
+  )
 }
 
 export function login2(data) {

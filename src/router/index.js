@@ -77,47 +77,48 @@ export const constantRoutes = [
     children: [
       {
         path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
+        component: () => import('@/views/a_dashboard/index'),
         name: 'Dashboard',
-        meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
+        meta: { title: '欢迎', icon: 'el-icon-sunny', affix: true }
       }
     ]
   },
-  // {
-  //   path: '/documentation',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       component: () => import('@/views/documentation/index'),
-  //       name: 'Documentation',
-  //       meta: { title: 'Documentation', icon: 'documentation', affix: true }
-  //     }
-  //   ]
-  // },
   {
-    path: '/articles',
+    path: '/article',
     component: Layout,
-    redirect: '/articles/index',
+    redirect: '/article/index',
     children: [
       {
         path: 'index',
         component: () => import('@/views/a_article/index'),
-        name: 'articles',
+        name: 'article',
         meta: { title: '文章管理', icon: 'edit', noCache: true }
       }
     ]
   },
   {
-    path: '/notices',
+    path: '/notice',
     component: Layout,
-    redirect: '/notices/index',
+    redirect: '/notice/index',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/a_notices/index'),
-        name: 'notices',
+        component: () => import('@/views/a_notice/index'),
+        name: 'notice',
         meta: { title: '通知公告', icon: 'edit', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/banner',
+    component: Layout,
+    redirect: '/banner/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/a_banner/index'),
+        name: 'banner',
+        meta: { title: '轮播图管理', icon: 'edit', noCache: true }
       }
     ]
   },
@@ -131,7 +132,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/a_feedback/index'),
         name: 'feedback',
-        meta: { title: '问题反馈', icon: 'user', noCache: true }
+        meta: { title: '问题反馈', icon: 'el-icon-question', noCache: true }
       }
     ]
   },
@@ -144,7 +145,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/a_report/index'),
         name: 'report',
-        meta: { title: '报事报修', icon: 'user', noCache: true }
+        meta: { title: '报事报修', icon: 'el-icon-info', noCache: true }
       }
     ]
   },
@@ -157,7 +158,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/a_contacts/index'),
         name: 'contacts',
-        meta: { title: '联系人管理', icon: 'user', noCache: true }
+        meta: { title: '联系人管理', icon: 'el-icon-phone', noCache: true }
       }
     ]
   },
@@ -173,15 +174,54 @@ export const constantRoutes = [
     children: [
       {
         path: 'merchant',
-        component: () => import('@/views/a_admin/merchant'),
+        component: () => import('@/views/s_admin/merchant'),
         name: 'merchant',
         meta: { title: 'Merchant', icon: 'list' }
       },
       {
         path: 'manager',
-        component: () => import('@/views/a_admin/manager'),
+        component: () => import('@/views/s_admin/manager'),
         name: 'manager',
         meta: { title: 'Manager', icon: 'list' }
+      }
+    ]
+  },
+  {
+    path: '/ad_source',
+    component: Layout,
+    redirect: '/ad_source/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/a_ad_source/index'),
+        name: 'ad_source',
+        meta: { title: '广告素材', icon: 'el-icon-phone', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/ad_splash',
+    component: Layout,
+    redirect: '/ad_splash/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/a_ad_splash/index'),
+        name: 'ad_splash',
+        meta: { title: '开屏广告', icon: 'el-icon-phone', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/ad_popup',
+    component: Layout,
+    redirect: '/ad_popup/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/a_ad_pop/index'),
+        name: 'ad_popup',
+        meta: { title: '弹框广告', icon: 'el-icon-phone', noCache: true }
       }
     ]
   },

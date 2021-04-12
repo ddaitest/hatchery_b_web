@@ -1,4 +1,3 @@
-// 软文页面共用。物业端没有 优先级，serviceID 只有2个可选。
 <template>
   <div class="app-container">
     <div class="filter-container">
@@ -9,7 +8,7 @@
         icon="el-icon-edit"
         @click="handleCreate"
       >
-        {{ createLabel }}
+        发布新文章
       </el-button>
     </div>
 
@@ -28,15 +27,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="" align="left" label="标题">
+      <el-table-column width="" align="left" label="文章标题">
         <template slot-scope="{ row }">
           <span>{{ row.title }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="100px" class-name="status-col" label="展示分类">
-        <template slot-scope="{ row }">
-          <span>{{ filterOption(row.service_id) }}</span>
         </template>
       </el-table-column>
 
@@ -82,11 +75,7 @@
         <template slot-scope="{ row }">
           <el-popconfirm :title="row.redirect_url" icon="el-icon-link">
             <template #reference>
-              <el-button
-                size="mini"
-                @click="handleCopy(row.redirect_url, $event)"
-                >查看链接</el-button
-              >
+              <el-button size="mini">查看链接</el-button>
             </template>
           </el-popconfirm>
         </template>
@@ -155,24 +144,15 @@
         label-width="100px"
         style="width: 100%"
       >
-        <el-form-item label="标题" prop="title">
+        <el-form-item label="公告标题" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-
-        <el-form-item label=" ">
-          <el-alert
-            title="可以设置链接 或者 上传图片"
-            type="info"
-            left
-            show-icon
-          />
-        </el-form-item>
-
         <el-form-item label="封面链接">
           <el-input v-model="temp.avatar" />
         </el-form-item>
-
-        <el-form-item label="上传封面">
+        <el-form-item label="封面">
+          <!-- <Upload v-model="temp.avatar" /> -->
+          <!-- http://106.12.147.150:8080/files/upload -->
           <el-upload
             action="http://106.12.147.150:8080/files/upload/"
             list-type="picture-card"
@@ -185,7 +165,6 @@
             <i class="el-icon-plus"></i>
           </el-upload>
         </el-form-item>
-
         <el-form-item label="重要程度" v-if="Kerrigan">
           <el-input v-model="temp.top_flag" />
         </el-form-item>
@@ -199,7 +178,7 @@
           />
         </el-form-item> -->
         <!-- Service id -->
-        <el-form-item label="展示分类">
+        <el-form-item label="PAGE" v-if="Kerrigan">
           <el-select
             v-model="temp.service_id"
             class="filter-item"
@@ -208,8 +187,8 @@
             <el-option
               v-for="item in serviceIdOptions"
               :key="item.key"
-              :label="item.label"
-              :value="item.value"
+              :label="item.display_name"
+              :value="item.display_name"
             />
           </el-select>
         </el-form-item>
@@ -257,27 +236,52 @@
 
 <script>
 import {
-  fetchList,
-  fetchDetail,
-  createObject,
-  updateObject,
-  deleteObject,
-} from "@/api/a_article";
-import { options, optionSuper, filterOption, Kerrigan } from "@/api/setting";
+  fetchArticleList,
+  fetchArticle,
+  createArticle,
+  updateArticle,
+  deleteArticle,
+} from "@/api/aaa";
 import Pagination from "@/components/Pagination";
 import waves from "@/directive/waves"; // waves directive
 import { parseTime } from "@/utils";
 import wang from "@/components/wang";
 import clip from "@/utils/clipboard"; // use clipboard directly
+import clipboard from "@/directive/clipboard/index.js";
+import Upload from "@/components/Upload/SingleImageA";
 
 const contentTypeOptions = [
   { key: "0", display_name: "图文内容" },
   { key: "1", display_name: "外部链接" },
 ];
 
+const serviceIdOptions2 = ["tab1", "tab2", "tab3", "service1", "service2"];
+const serviceIdOptions = [
+  { key: 0, display_name: "tab1" },
+  { key: 1, display_name: "tab2" },
+  { key: 2, display_name: "tab3" },
+  { key: 3, display_name: "service1" },
+  { key: 4, display_name: "service2" },
+];
+
+const defaultData = {
+  loading: false,
+  id: "",
+  title: "",
+  status: "0",
+  contents_type: "0",
+  top_flag: "0",
+  contents: "",
+  redirect_url: "",
+  avatar: "",
+  service_id: "",
+};
+const Kerrigan = true; //自己管理后台
+
 export default {
-  components: { Pagination, wang },
-  directives: { waves },
+  name: "NoticePage",
+  components: { Pagination, wang, Upload },
+  directives: { waves, clipboard },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -297,10 +301,10 @@ export default {
   },
   data() {
     return {
-      createLabel: "发布新文章",
       Kerrigan,
       contentTypeOptions,
-      serviceIdOptions: Kerrigan ? optionSuper : options,
+      serviceIdOptions,
+      serviceIdOptions2,
       tableKey: 0,
       list: null,
       total: 200,
@@ -309,18 +313,7 @@ export default {
         page_num: 0,
         page_size: 10,
       },
-      temp: {
-        loading: false,
-        id: "",
-        title: "",
-        status: "0",
-        contents_type: "0",
-        top_flag: "0",
-        contents: "",
-        redirect_url: "",
-        avatar: "",
-        service_id: "",
-      },
+      temp: defaultData,
       dialogFormVisible: false,
       dialogStatus: "",
       textMap: {
@@ -359,10 +352,9 @@ export default {
     },
   },
   methods: {
-    filterOption,
     async getList() {
       this.listLoading = true;
-      const { data, total, page_size } = await fetchList(this.listQuery);
+      const { data, total, page_size } = await fetchArticleList(this.listQuery);
       const items = data;
       this.list = items.map((v) => {
         this.$set(v, "edit_loading", false); // https://vuejs.org/v2/guide/reactivity.html
@@ -378,10 +370,12 @@ export default {
       this.temp = Object.assign({}, row); // copy obj
       console.log("row.contents_type=" + row.contents_type);
       if (row.contents_type === "0") {
-        const { data } = await fetchDetail(row.id);
+        const { data } = await fetchArticle(row.id);
         this.temp.contents = data.contents;
       }
-
+      // else {
+      //   this.temp.redirect_url = row.redirect_url;
+      // }
       row.edit_loading = false;
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
@@ -397,26 +391,26 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
-    // handleChangeImp(row) {
-    //   this.$message({
-    //     message: "操作成功",
-    //     type: "success",
-    //   });
-    // },
+    handleChangeImp(row) {
+      this.$message({
+        message: "操作Success",
+        type: "success",
+      });
+    },
     async handleModifyStatus(row, status) {
       row.update_loading = true;
       const requestData = {
         id: row.id,
         status: status,
       };
-      const { data, code, message } = await updateObject(requestData);
+      const { data, code, message } = await updateArticle(requestData);
       row.update_loading = false;
       if (message === "success") {
         this.$message({
           message: "编辑成功",
           type: "success",
         });
-        // this.getList();
+        this.getList();
       } else {
         this.$message({
           message: "编辑失败: " + message,
@@ -439,7 +433,7 @@ export default {
         service_id: this.temp.service_id,
         top_flag: this.temp.top_flag,
       };
-      const { data, code, message } = await updateObject(requestData);
+      const { data, code, message } = await updateArticle(requestData);
       this.temp.loading = false;
       if (message === "success") {
         this.$message({
@@ -457,7 +451,7 @@ export default {
     },
     async handleDelete(row) {
       row.delete_loading = true;
-      const { data, code, message } = await deleteObject(row.id);
+      const { data, code, message } = await deleteArticle(row.id);
       row.delete_loading = false;
       if (message === "success") {
         this.$notify({
@@ -471,21 +465,11 @@ export default {
           type: "danger",
         });
       }
+      this.list.splice(index, 1);
     },
 
     resetTemp() {
-      this.temp = {
-        loading: false,
-        id: "",
-        title: "",
-        status: "0",
-        contents_type: "0",
-        top_flag: "0",
-        contents: "",
-        redirect_url: "",
-        avatar: "",
-        service_id: "",
-      };
+      this.temp = defaultData;
     },
     async createData() {
       this.temp.loading = true;
@@ -500,7 +484,7 @@ export default {
             : this.temp.redirect_url,
         top_flag: this.temp.top_flag,
       };
-      const { data, code, message } = await createObject(requestData);
+      const { data, code, message } = await createArticle(requestData);
       this.temp.loading = false;
       if (message === "success") {
         this.$message({
@@ -519,6 +503,13 @@ export default {
 
     handleCopy(text, event) {
       clip(text, event);
+    },
+    clipboardSuccess() {
+      this.$message({
+        message: "Copy successfully",
+        type: "success",
+        duration: 1500,
+      });
     },
     beforeUploadImage(file) {
       const isJPG = file.type === "image/jpeg";

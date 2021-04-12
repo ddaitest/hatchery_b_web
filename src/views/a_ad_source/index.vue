@@ -262,7 +262,7 @@ import {
   createObject,
   updateObject,
   deleteObject,
-} from "@/api/a_article";
+} from "@/api/a_ad_source";
 import { options, optionSuper, filterOption, Kerrigan } from "@/api/setting";
 import Pagination from "@/components/Pagination";
 import waves from "@/directive/waves"; // waves directive
@@ -297,7 +297,7 @@ export default {
   },
   data() {
     return {
-      createLabel: "发布新文章",
+      createLabel: "新建广告素材",
       Kerrigan,
       contentTypeOptions,
       serviceIdOptions: Kerrigan ? optionSuper : options,
