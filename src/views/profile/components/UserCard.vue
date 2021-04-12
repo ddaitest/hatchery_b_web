@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import PanThumb from '@/components/PanThumb'
+import PanThumb from '@/components/PanThumb/index'
 
 export default {
   components: { PanThumb },
