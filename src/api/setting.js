@@ -9,8 +9,11 @@ export const optionSuper = [
     { key: 0, value: "tab1", label: "首页" },
     { key: 1, value: "tab2", label: "服务" },
     { key: 2, value: "tab3", label: "周边" },
-    { key: 3, value: "service1", label: "服务1" },
-    { key: 4, value: "service2", label: "服务2" },
+    { key: 3, value: "service1", label: "便民服务" },
+    { key: 4, value: "service2", label: "家电维修" },
+    { key: 4, value: "service3", label: "房屋租售" },
+    { key: 4, value: "service4", label: "教育培训" },
+    { key: 4, value: "service5", label: "开锁换锁" },
 ];
 
 export function filterOption(value) {
