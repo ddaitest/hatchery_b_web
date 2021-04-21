@@ -49,7 +49,7 @@ service.interceptors.response.use(
     // if the custom code is not 20000, it is judged as an error.
     if ((res.code !== 100000)&&(res.code !== 20000)) {
       Message({
-        message: res.message || 'Error',
+        message: (res.message || 'Error')+"_!!",
         type: 'error',
         duration: 5 * 1000
       })
@@ -75,7 +75,7 @@ service.interceptors.response.use(
   error => {
     console.log('err' + error) // for debug
     Message({
-      message: error.message,
+      message: error.message+"_!",
       type: 'error',
       duration: 5 * 1000
     })
