@@ -20,7 +20,7 @@ service.interceptors.request.use(
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['X-Token'] = getToken()
-      config.headers['Authorization'] = "Bearer " +getToken()
+      config.headers['Authorization'] = "Bearer " + getToken()
     }
     return config
   },
@@ -47,9 +47,9 @@ service.interceptors.response.use(
     const res = response.data
 
     // if the custom code is not 20000, it is judged as an error.
-    if ((res.code !== 100000)&&(res.code !== 20000)) {
+    if ((res.code !== 100000) && (res.code !== 20000)) {
       Message({
-        message: (res.message || 'Error')+"_!!",
+        message: (res.message || 'Error') + "_!!",
         type: 'error',
         duration: 5 * 1000
       })
@@ -73,12 +73,18 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log('err' + error) // for debug
+    console.log('error=' + error) // for debug
+    console.log(error) // for debug
     Message({
-      message: error.message+"_!",
+      message: error.message + "_!",
       type: 'error',
       duration: 5 * 1000
     })
+    if ((error+"").includes("401")) {
+      store.dispatch('user/resetToken').then(() => {
+        location.reload()
+      })
+    }
     return Promise.reject(error)
   }
 )
