@@ -225,6 +225,19 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/ad_push',
+    component: Layout,
+    redirect: '/ad_push/banner',
+    children: [
+      {
+        path: 'banner',
+        component: () => import('@/views/a_push/push_banner'),
+        name: 'banner',
+        meta: { title: '发布推送', icon: 'el-icon-phone', noCache: true }
+      }
+    ]
+  }
 ]
 
 /**

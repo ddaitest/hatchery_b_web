@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-const REAL_BASE_URL = "http://106.12.147.150:8080/";
+import {Kerrigan,REAL_BASE_URL} from './setting'
 
 export function fetchList(query) {
   return request({
@@ -40,6 +40,15 @@ export function deleteObject(id) {
   return request({
     url: `notice/delete/${id}`,
     method: 'get',
+    baseURL: REAL_BASE_URL
+  })
+}
+
+export function sendPush(id) {
+  return request({
+    url: 'push/publish/notice',
+    method: 'get',
+    params: { 'notice_id': id },
     baseURL: REAL_BASE_URL
   })
 }

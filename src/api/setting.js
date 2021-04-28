@@ -1,4 +1,5 @@
 export const Kerrigan = true;
+export const REAL_BASE_URL = 'http://106.12.147.150:8080/'
 
 export const options = [
     { key: 0, value: "tab1", label: "首页" },
